@@ -16,7 +16,7 @@ st.set_page_config(page_title="看護診断/看護計画アシスタント", pag
 load_env()
 ensure_session_state()
 
-# Inject styles（ライト固定・ダークモードなし）
+# ライトテーマ固定
 inject_base_styles()
 
 # --- Client ---
@@ -58,22 +58,14 @@ if submit:
                 output_format=output_format,
                 result=result
             )
-            show_toast("生成完了。下の『出力結果』と履歴に追加しました。", variant="ok")
-
-# --- Latest Output Preview (most recent only for quick view) ---
-if has_last_outputs():
-    st.markdown("## 🧾 出力結果（直近の生成）")
-    last = st.session_state["last_outputs"]
-    if last["output_format"] in ("SOAP形式", "両方"):
-        output_section_soap(last.get("soap"))
-    if last["output_format"] in ("看護計画表形式", "両方"):
-        output_section_plan_table(last.get("plan_table"))
+            show_toast("生成完了。会話履歴に追加しました。", variant="ok")
 
 # --- Follow-up Q&A ---
+# 直近の出力に基づく質問のみ受付。入力欄は毎回クリアされるように key を固定し送信後にリセット。
 if has_last_outputs():
     st.markdown("---")
     st.markdown("### ❓ 出力結果に関するご質問")
-    q = followup_box()
+    q = followup_box()  # key="followup_q" のテキストボックス
     ask = st.button("💬 質問する", use_container_width=True)
     if ask:
         if not q.strip():
@@ -94,6 +86,8 @@ if has_last_outputs():
                     st.markdown("#### 回答")
                     st.markdown(ans["answer"])
                     append_history_followup(question=q, answer=ans["answer"])
+        # フォローアップ入力を必ずクリア
+        st.session_state["followup_q"] = ""
 
 # --- End button ---
 st.markdown("---")

@@ -47,8 +47,10 @@ def output_section_plan_table(plan_table):
     st.table(rows)
 
 def followup_box():
+    # 「新たな質問」で前回入力が残らないように、固定キーを使い送信後に main.py 側でクリア
     return st.text_input(
-        "出力結果に関する質問（例：「◯◯の意図は？」「◯◯の要点を要約して」）",
+        "出力結果に関するご質問（新しい質問を入力してください）",
+        key="followup_q",
         placeholder="例：目標設定の短期目標の根拠を教えてください"
     )
 

@@ -9,8 +9,9 @@ RELEVANT_KEYWORDS = [
 ]
 
 def ensure_session_state():
-    st.session_state.setdefault("last_outputs", None)   # 直近の結果（プレビュー用）
+    st.session_state.setdefault("last_outputs", None)   # 直近の結果（Q&Aのコンテキスト用）
     st.session_state.setdefault("history", [])          # セッション内のみ保持する会話履歴（生成・Q&A）
+    st.session_state.setdefault("followup_q", "")       # フォローアップ質問欄の入力内容（送信後にクリア）
 
 def save_last_outputs(result, patient_text, output_format):
     st.session_state["last_outputs"] = {

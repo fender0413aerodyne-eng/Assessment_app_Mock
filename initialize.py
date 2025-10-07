@@ -17,7 +17,7 @@ def get_client():
     return OpenAI(api_key=api_key)
 
 def inject_base_styles():
-    # ライトテーマ固定（ダークモードの切替は不要）
+    # ライトテーマ固定（ダークモード切替なし）
     st.markdown("""
     <style>
       :root{
