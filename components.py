@@ -6,7 +6,7 @@ def app_header():
         st.markdown('<div class="app-title">🩺 看護計画アシスタント <span class="pill">補助支援用途</span></div>', unsafe_allow_html=True)
 
 def disclaimer():
-    st.info("本アプリは補助支援目的であり、最終判断は医療従事者に委ねられるものとなります。対象患者は成人一般を想定します。")
+    st.info("本アプリは補助支援目的であり、最終判断は医療従事者に委ねられるものとなります。対象患者は成人一般の想定です。")
 
 def patient_input_form():
     return st.text_area(
