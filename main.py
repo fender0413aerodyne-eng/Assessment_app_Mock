@@ -16,7 +16,7 @@ st.set_page_config(page_title="看護診断/看護計画アシスタント", pag
 load_env()
 ensure_session_state()
 
-# ライトテーマ固定
+# Inject styles（ライト固定・ダークモードなし）
 inject_base_styles()
 
 # --- Client ---
@@ -58,14 +58,18 @@ if submit:
                 output_format=output_format,
                 result=result
             )
-            show_toast("生成完了。会話履歴に追加しました。", variant="ok")
+            # 直近の生成結果をその場で表示（履歴の末尾＝最新を単独レンダリング）
+            show_toast("生成完了。下に結果を表示しました。", variant="ok")
+            st.markdown("## 🧾 生成結果（今回）")
+            history_timeline([st.session_state["history"][-1]])
+            # 新たな質問入力欄は前回の文字を引き継がないようにクリア
+            st.session_state["followup_q"] = ""
 
 # --- Follow-up Q&A ---
-# 直近の出力に基づく質問のみ受付。入力欄は毎回クリアされるように key を固定し送信後にリセット。
 if has_last_outputs():
     st.markdown("---")
     st.markdown("### ❓ 出力結果に関するご質問")
-    q = followup_box()  # key="followup_q" のテキストボックス
+    q = followup_box()  # key="followup_q" で状態管理（components.py側）
     ask = st.button("💬 質問する", use_container_width=True)
     if ask:
         if not q.strip():
@@ -86,8 +90,8 @@ if has_last_outputs():
                     st.markdown("#### 回答")
                     st.markdown(ans["answer"])
                     append_history_followup(question=q, answer=ans["answer"])
-        # フォローアップ入力を必ずクリア
-        st.session_state["followup_q"] = ""
+                    # 次の質問開始時に入力欄が空になるようにクリア
+                    st.session_state["followup_q"] = ""
 
 # --- End button ---
 st.markdown("---")

@@ -3,11 +3,10 @@ from datetime import datetime
 
 def app_header():
     with st.container():
-        st.markdown('<div class="app-title">🩺 看護診断/看護計画アシスタント <span class="pill">教育・支援用途</span></div>', unsafe_allow_html=True)
-        st.write("**モデル**：gpt-4o-mini｜**役割**：臨床現場での豊富な経験を持つベテランの看護師｜**温度**：0.1（再現性重視）")
+        st.markdown('<div class="app-title">🩺 看護計画アシスタント <span class="pill">補助支援用途</span></div>', unsafe_allow_html=True)
 
 def disclaimer():
-    st.info("本アプリは支援目的であり、最終判断は医療従事者に委ねられるものとなります。対象は成人一般です。")
+    st.info("本アプリは補助支援目的であり、最終判断は医療従事者に委ねられるものとなります。対象患者は成人一般を想定します。")
 
 def patient_input_form():
     return st.text_area(
@@ -47,9 +46,9 @@ def output_section_plan_table(plan_table):
     st.table(rows)
 
 def followup_box():
-    # 「新たな質問」で前回入力が残らないように、固定キーを使い送信後に main.py 側でクリア
+    # key を付与して質問欄が前回値を保持しないように制御できるようにする
     return st.text_input(
-        "出力結果に関するご質問（新しい質問を入力してください）",
+        "出力結果に関するご質問（例：「◯◯の意図は？」「◯◯の要点を要約して」）",
         key="followup_q",
         placeholder="例：目標設定の短期目標の根拠を教えてください"
     )
