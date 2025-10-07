@@ -28,7 +28,7 @@ disclaimer()
 
 # --- Conversation history (always visible) ---
 if st.session_state["history"]:
-    st.markdown("## 🗂️ 会話履歴（このセッション内）")
+    st.markdown("## 🗂️ 会話履歴")
     history_timeline(st.session_state["history"])
     st.markdown("---")
 
@@ -46,7 +46,7 @@ if submit:
     if not patient_text.strip():
         show_toast("看護情報を入力してください。", variant="warn")
     else:
-        with st.spinner("思考中… 看護診断と計画を整理しています"):
+        with st.spinner("思考中… "):
             result = generate_care_plan(client, patient_text, output_format)
         if result.get("error"):
             show_toast(result["error"], variant="error")
@@ -59,11 +59,13 @@ if submit:
                 result=result
             )
             # 直近の生成結果をその場で表示（履歴の末尾＝最新を単独レンダリング）
-            show_toast("生成完了。下に結果を表示しました。", variant="ok")
-            st.markdown("## 🧾 生成結果（今回）")
+            show_toast("完了。下に結果を表示しました。", variant="ok")
+            st.markdown("## 🧾 結果（今回）")
             history_timeline([st.session_state["history"][-1]])
-            # 新たな質問入力欄は前回の文字を引き継がないようにクリア
-            st.session_state["followup_q"] = ""
+            # 次の質問開始時に入力欄が空になるようにクリアして即リラン
+            if "followup_q" in st.session_state:
+                st.session_state["followup_q"] = ""
+                st.rerun()
 
 # --- Follow-up Q&A ---
 if has_last_outputs():
@@ -78,7 +80,7 @@ if has_last_outputs():
             if not is_relevant_question(q):
                 st.info("本件とは関係がない質問です。対象：『看護情報 → 看護診断 / 看護計画（SOAP / 計画表）』に関するご質問を受け付けます。")
             else:
-                with st.spinner("思考中… 回答を準備しています"):
+                with st.spinner("思考中… "):
                     ans = answer_followup(
                         client=client,
                         last_outputs=st.session_state["last_outputs"],
@@ -90,8 +92,10 @@ if has_last_outputs():
                     st.markdown("#### 回答")
                     st.markdown(ans["answer"])
                     append_history_followup(question=q, answer=ans["answer"])
-                    # 次の質問開始時に入力欄が空になるようにクリア
-                    st.session_state["followup_q"] = ""
+                    # 入力欄を安全にクリア → すぐ再実行（UIと状態の不整合を防止）
+                    if "followup_q" in st.session_state:
+                        st.session_state["followup_q"] = ""
+                        st.rerun()
 
 # --- End button ---
 st.markdown("---")
