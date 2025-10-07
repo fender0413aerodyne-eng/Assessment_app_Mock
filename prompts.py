@@ -3,7 +3,6 @@ SYSTEM_ROLE = """あなたは臨床現場での豊富な経験を持つベテラ
 安全・再現性を重視し、臨床で実行可能な粒度で簡潔明瞭に記述します。
 本アプリは教育・支援目的であり、最終判断は医療従事者に委ねられます。"""
 
-# JSON出力仕様を厳格化
 PLAN_JSON_SPEC = """
 必ず以下のJSONで返してください（余計なテキストは一切禁止）:
 {
@@ -47,7 +46,6 @@ def build_generation_prompt(patient_text: str, output_format: str) -> list:
     ]
 
 def build_followup_prompt(context: dict, question: str) -> list:
-    # context には soap, plan_table, reasoning_summary, patient_text が入る想定
     user = f"""コンテキスト（生成済み出力）:
 {context}
 

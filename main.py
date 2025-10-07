@@ -11,28 +11,26 @@ from utils import (
     has_last_outputs
 )
 
-# --- App bootstrap ---
+# --- Page setup ---
 st.set_page_config(page_title="看護診断/看護計画アシスタント", page_icon="🩺", layout="wide")
 load_env()
-client = get_client()
-inject_base_styles()
-
-# --- Session state ---
 ensure_session_state()
 
-# --- Header & Disclaimer ---
-app_header()
-disclaimer()
-
-# --- Theme toggle ---
+# --- Theme toggle first (so styles reflect current state) ---
 with st.sidebar:
     st.markdown("### 表示設定")
     dark_mode = st.toggle("ダークモード", value=st.session_state.get("dark_mode", False))
     st.session_state["dark_mode"] = dark_mode
-    st.markdown(
-        '<div class="theme-toggle" data-dark="{}"></div>'.format("true" if dark_mode else "false"),
-        unsafe_allow_html=True
-    )
+
+# Inject styles with current dark mode
+inject_base_styles(dark_mode)
+
+# --- Client ---
+client = get_client()
+
+# --- Header & Disclaimer ---
+app_header()
+disclaimer()
 
 # --- Input area ---
 st.markdown("### 📝 看護情報を入力")

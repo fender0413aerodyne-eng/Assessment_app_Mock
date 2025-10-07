@@ -5,6 +5,5 @@ secondaryBackgroundColor = "#f5f7fb"
 textColor = "#111827"
 font = "sans serif"
 
-# ダークテーマ（トグルはCSSで模擬切替）
 [client]
 toolbarMode = "minimal"

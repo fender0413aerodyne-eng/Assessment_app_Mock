@@ -1,8 +1,9 @@
 import streamlit as st
 
 def app_header():
-    st.markdown('<div class="app-title">🩺 看護診断/看護計画アシスタント <span class="pill">教育・支援用途</span></div>', unsafe_allow_html=True)
-    st.write("**モデル**：gpt-4o-mini｜**役割**：臨床現場での豊富な経験を持つベテランの看護師｜**温度**：0.1（再現性重視）")
+    with st.container():
+        st.markdown('<div class="app-title">🩺 看護診断/看護計画アシスタント <span class="pill">教育・支援用途</span></div>', unsafe_allow_html=True)
+        st.write("**モデル**：gpt-4o-mini｜**役割**：臨床現場での豊富な経験を持つベテランの看護師｜**温度**：0.1（再現性重視）")
 
 def disclaimer():
     st.info("本アプリは支援目的であり、最終判断は医療従事者に委ねられるものとなります。対象は成人一般です。")
@@ -32,8 +33,10 @@ def output_section_soap(soap_dict):
 def output_section_plan_table(plan_table):
     if not plan_table: return
     st.markdown("### 📋 看護計画表", help="NANDA-I/NIC/NOC 準拠（教育・支援目的）")
+    # 行数を最大長で合わせ、空セルを補完
     rows = []
-    for i in range(max_len(plan_table)):
+    n = max_len(plan_table)
+    for i in range(n):
         rows.append({
             "看護問題（NANDA-I）": safe_get(plan_table, "problems", i),
             "アセスメント（根拠）": safe_get(plan_table, "assessments", i),

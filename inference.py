@@ -1,5 +1,4 @@
 from openai import OpenAI
-import streamlit as st
 from utils import json_loads_safe
 from prompts import build_generation_prompt, build_followup_prompt
 
@@ -9,7 +8,6 @@ TEMPERATURE = 0.1
 def generate_care_plan(client: OpenAI, patient_text: str, output_format: str):
     try:
         messages = build_generation_prompt(patient_text, output_format)
-        # JSON縛り（対応モデルでは厳格JSONを要求）
         resp = client.chat.completions.create(
             model=MODEL,
             temperature=TEMPERATURE,
@@ -20,7 +18,6 @@ def generate_care_plan(client: OpenAI, patient_text: str, output_format: str):
         data = json_loads_safe(content)
         if not data:
             return {"error": "出力の解析に失敗しました。入力内容を見直すか、再度実行してください。"}
-        # guard: ensure keys
         data.setdefault("soap", {"assessment":[], "plan":[]})
         data.setdefault("plan_table", {"problems":[], "assessments":[], "goals":[], "interventions":[], "evaluation":[]})
         data.setdefault("reasoning_summary", {"key_findings":[], "rationales":[], "differentials":[]})
