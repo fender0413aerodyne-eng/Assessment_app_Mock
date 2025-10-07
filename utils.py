@@ -1,5 +1,6 @@
 import re
 import json
+from datetime import datetime, timezone
 import streamlit as st
 
 RELEVANT_KEYWORDS = [
@@ -8,8 +9,8 @@ RELEVANT_KEYWORDS = [
 ]
 
 def ensure_session_state():
-    st.session_state.setdefault("last_outputs", None)
-    st.session_state.setdefault("dark_mode", False)
+    st.session_state.setdefault("last_outputs", None)   # 直近の結果（プレビュー用）
+    st.session_state.setdefault("history", [])          # セッション内のみ保持する会話履歴（生成・Q&A）
 
 def save_last_outputs(result, patient_text, output_format):
     st.session_state["last_outputs"] = {
@@ -34,8 +35,37 @@ def json_loads_safe(s: str):
     except Exception:
         # 可能な範囲で修復: コードフェンスや余分なカンマを除去
         s = re.sub(r"^```(json)?|```$", "", s.strip(), flags=re.MULTILINE)
-        s = re.sub(r",\s*([}\]])", r"\\1", s)
+        s = re.sub(r",\s*([}\]])", r"\1", s)
         try:
             return json.loads(s)
         except Exception:
             return None
+
+# ===== Session-scoped conversation history =====
+def append_history_generation(patient_text: str, output_format: str, result: dict):
+    entry = {
+        "type": "generation",
+        "ts": now_iso(),
+        "payload": {
+            "patient_text": patient_text,
+            "output_format": output_format,
+            "soap": result.get("soap"),
+            "plan_table": result.get("plan_table"),
+            "reasoning_summary": result.get("reasoning_summary"),
+        }
+    }
+    st.session_state["history"].append(entry)
+
+def append_history_followup(question: str, answer: str):
+    entry = {
+        "type": "followup",
+        "ts": now_iso(),
+        "payload": {
+            "question": question,
+            "answer": answer
+        }
+    }
+    st.session_state["history"].append(entry)
+
+def now_iso() -> str:
+    return datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
