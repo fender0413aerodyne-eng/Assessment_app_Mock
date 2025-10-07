@@ -45,11 +45,14 @@ def output_section_plan_table(plan_table):
         })
     st.table(rows)
 
-def followup_box():
-    # key を付与して質問欄が前回値を保持しないように制御できるようにする
+def followup_box(nonce: int):
+    """
+    フォローアップ質問入力欄。
+    nonceにより毎回ユニークなkeyを使うので、送信後に入力が残りません。
+    """
     return st.text_input(
         "出力結果に関するご質問（例：「◯◯の意図は？」「◯◯の要点を要約して」）",
-        key="followup_q",
+        key=f"followup_q_{nonce}",
         placeholder="例：目標設定の短期目標の根拠を教えてください"
     )
 

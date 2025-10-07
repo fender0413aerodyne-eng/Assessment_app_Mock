@@ -12,9 +12,11 @@ from utils import (
 )
 
 # --- Page setup ---
-st.set_page_config(page_title="看護診断/看護計画アシスタント", page_icon="🩺", layout="wide")
+st.set_page_config(page_title="看護計画アシスタント", page_icon="🩺", layout="wide")
 load_env()
 ensure_session_state()
+# フォローアップ入力欄のキー用ノンス（セッション内で増分）
+st.session_state.setdefault("q_nonce", 0)
 
 # Inject styles（ライト固定・ダークモードなし）
 inject_base_styles()
@@ -46,7 +48,7 @@ if submit:
     if not patient_text.strip():
         show_toast("看護情報を入力してください。", variant="warn")
     else:
-        with st.spinner("思考中… "):
+        with st.spinner("思考中… 看護診断と計画を整理しています"):
             result = generate_care_plan(client, patient_text, output_format)
         if result.get("error"):
             show_toast(result["error"], variant="error")
@@ -58,21 +60,24 @@ if submit:
                 output_format=output_format,
                 result=result
             )
-            # 直近の生成結果をその場で表示（履歴の末尾＝最新を単独レンダリング）
+            # 今回の結果を即表示（履歴の最新カードを単独で描画）
             show_toast("完了。下に結果を表示しました。", variant="ok")
             st.markdown("## 🧾 結果（今回）")
             history_timeline([st.session_state["history"][-1]])
-            # 次の質問開始時に入力欄が空になるようにクリアして即リラン
-            if "followup_q" in st.session_state:
-                st.session_state["followup_q"] = ""
-                st.rerun()
+
+            # 次の質問入力欄が空から始まるように、キーを更新して再実行
+            st.session_state["q_nonce"] += 1
+            st.rerun()
 
 # --- Follow-up Q&A ---
 if has_last_outputs():
     st.markdown("---")
     st.markdown("### ❓ 出力結果に関するご質問")
-    q = followup_box()  # key="followup_q" で状態管理（components.py側）
+
+    # ここで毎回ユニークな key を用いるため、前回入力を引き継がない
+    q = followup_box(nonce=st.session_state["q_nonce"])
     ask = st.button("💬 質問する", use_container_width=True)
+
     if ask:
         if not q.strip():
             show_toast("質問内容を入力してください。", variant="warn")
@@ -80,7 +85,7 @@ if has_last_outputs():
             if not is_relevant_question(q):
                 st.info("本件とは関係がない質問です。対象：『看護情報 → 看護診断 / 看護計画（SOAP / 計画表）』に関するご質問を受け付けます。")
             else:
-                with st.spinner("思考中… "):
+                with st.spinner("思考中… 回答を準備しています"):
                     ans = answer_followup(
                         client=client,
                         last_outputs=st.session_state["last_outputs"],
@@ -92,10 +97,10 @@ if has_last_outputs():
                     st.markdown("#### 回答")
                     st.markdown(ans["answer"])
                     append_history_followup(question=q, answer=ans["answer"])
-                    # 入力欄を安全にクリア → すぐ再実行（UIと状態の不整合を防止）
-                    if "followup_q" in st.session_state:
-                        st.session_state["followup_q"] = ""
-                        st.rerun()
+
+                    # 入力欄のキーを更新してから再実行（=テキストボックスがリセットされる）
+                    st.session_state["q_nonce"] += 1
+                    st.rerun()
 
 # --- End button ---
 st.markdown("---")
